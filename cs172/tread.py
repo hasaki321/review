@@ -28,7 +28,7 @@ def main():
     threads = []
     for i in range(5):
         w = Worker(q,f"threading {i+1}")
-        w.daemon = True
+        # w.daemon = True
         w.start()
         threads.append(w)
 
@@ -36,7 +36,7 @@ def main():
         thread.join()
 
     for i in range(5):
-        t = threading.Thread(target=print,args=[i,i+1])
+        t = threading.Thread(target=print,args=[i,i+1],daemon=True)
         t.start()
 
 if __name__ == '__main__':

@@ -220,6 +220,15 @@ The set of attributes of a weak entity set that uniquely
 identifies a weak entity for a given owner entity is called
 **partial key**
 
+### ISA Hierarchies
+
+- Attributes are inherited (i.e., if B ISA A, the attributes
+  defined for a B entity are the attributes for A plus B)
+- We can have many levels of an ISA hierarchy (Overlap and Covering)
+- Reasons for using ISA:
+  - To add descriptive attributes specific to a subclass
+  - To identify entities that participate in a relationship
+
 ## Lec 4
 
 ### Aggregation
@@ -266,6 +275,13 @@ The SQL language has two main aspects
 
 - Data Manipulation Language (DML)
 
+### Destroying and Altering Relations
+
+```sql
+DROP TABLE Students;
+ALTER TABLE Students ADD COLUMN firstYear: integer;
+```
+
 ### Integrity Constraints (ICs)
 
 An IC is a condition that must be true for any instance
@@ -294,6 +310,13 @@ of the database
     other relation
   - It acts like a `logical pointer’
 
+```sql
+CREATE TABLE Enrolled
+(sid CHAR(20),cid CHAR(20),grade CHAR(2),
+PRIMARY KEY (sid,cid),
+FOREIGN KEY (sid) REFERENCES Students );
+```
+
 #### Referential Integrity
 
 - Default is NO ACTION (i.e.,
@@ -306,4 +329,223 @@ of the database
   foreign key value of
   referencing tuple)
 
+```sql
+CREATE TABLE Enrolled
+(sid CHAR(20),
+cid CHAR(20),
+grade CHAR(2),
+PRIMARY KEY (sid,cid),
+FOREIGN KEY (sid)
+REFERENCES Students
+ON DELETE CASCADE
+ON UPDATE SET DEFAULT );
+```
+
 ### Views
+
+A view is a table whose rows are not explicitly stored but
+computed as needed
+
+```sql
+CREATE VIEW YoungActiveStudents (name, grade) AS
+SELECT S.name, E.grade
+FROM Students S, Enrolled E
+WHERE S.sid = E.sid and S.age<21;
+```
+
+## Lec 5
+
+### Translating Aggregations
+
+![Alt text](image-4.png)
+
+### ER to Tables
+
+- Strong entities:
+  - Key -> primary key
+- (Binary) relationships:
+  - Get keys from all participating entities:
+    - 1:1 -> either key can be the primary key
+    - 1:N -> the key of the ‘N’ part will be the primary key
+    - M:N -> both keys will be the primary key
+- Weak entities:
+  - Strong key + partial key -> primary key
+  - ..... ON DELETE CASCADE
+- Total/Partial participation:
+  - NOT NULL
+- Ternary relationships:
+  - Get keys from all; decide which one(s) -> primary Key
+- Aggregation: like relationships
+- ISA:
+  - 3 tables (most general)
+  - 2 tables (‘total coverage’)
+
+## Lec 6
+
+Relational Algebra
+
+### Operators
+
+![Alt text](image-5.png)
+
+#### Projection
+
+$\pi_{attr}(S)$
+
+- The projection operator eliminates duplicates!
+  - Note: real DBMSs typically do not eliminate
+    duplicates unless explicitly asked for
+
+#### Selection
+
+$\sigma_{condition}(S)$
+
+- Selects rows that satisfy the selection condition
+- The schema of the output relation is identical to the schema of the
+  input relation
+
+#### Union & Intersection
+
+$RUS$ $R∩S$
+
+- The two input relations must be union-compatible
+  - Same number of fields
+  - `Corresponding’ fields have the same type
+
+#### Cross Product
+
+$RxS$
+
+- Cross Product:
+  - Each row of R is paired with each row of S
+  - The schema of the output relation concatenates the schemas of R and S
+
+#### Renaming
+
+$\rho(R(F),E)$
+
+![Alt text](image-6.png)
+
+#### Join
+
+![Alt text](image-7.png)
+![Alt text](image-8.png)
+![Alt text](image-9.png)
+
+#### Division
+
+![Alt text](image-10.png)
+
+## Lec 7
+
+![Alt text](image-11.png)
+![Alt text](image-12.png)
+
+Example:
+
+![Alt text](image-13.png)
+![Alt text](image-14.png)
+
+Forbidden:
+
+![Alt text](image-15.png)
+
+## Lec 8
+
+- Find student ssn(s) who live on “main” (st or
+  str or street – i.e., “main st” or “main str” or
+  “main street”)
+
+```sql
+select ssn
+from student
+where address like ‘main%’
+```
+
+- Find the ages of sailors whose names begin and end
+  with B and have at least 3 characters
+
+```sql
+select S.age
+from Sailors S
+where S.sname like ‘B_%B’
+```
+
+### Set Operations
+
+- Find ssn(s) of students taking both 15-415 and 15-413
+
+```sql
+(select ssn from takes where c-id=“15-415” )
+intersect
+(select ssn from takes where c-id=“15-413” )
+```
+
+Other operations: union , except
+
+### Aggregate Functions
+
+_This query is illegal in SQL- If the “select” clause uses an aggregate function, it must use ONLY aggregate function unless the query contains a “group by” clause!_
+
+```sql
+select S.sname, max (S.age)
+from Sailors S
+```
+
+#### Group by
+
+![Alt text](image-17.png)
+
+#### Having
+
+![Alt text](image-18.png)
+![Alt text](image-19.png)
+
+### Summary
+
+![Alt text](image-20.png)
+
+## Lec 9
+
+### Transaction
+
+- Using BEGIN; and COMMIT; we define an
+  transactions
+- In the transactions it is assured that all SQL
+  operations are carried out together. In case of a
+  problem in one operation, the effect of all
+  previous operations is removed.
+- Transactions are atomic operations
+
+```sql
+BEGIN;
+UPDATE accounts
+SET balance = balance - 100.00
+WHERE name = ’Julia’;
+UPDATE accounts
+SET balance = balance + 100.00
+WHERE name = ’Romeo’
+COMMIT;
+```
+
+## Lec 11
+
+### First Normal Form (1NF)
+
+A database schema is in First Normal Form
+(1NF) if the domain of each attribute
+contains only atomic values, and the value
+of each attribute contains only a single
+value from that domain.
+
+### Armstrong’s Rules
+
+![Alt text](image-21.png)
+![Alt text](image-22.png)
+![Alt text](image-23.png)
+
+### Superkey
+
+- A superkey is a set of attributes A1, ..., An s.t. for
+  any other attribute B, we have A1, ..., An àB
+- A key is a minimal superkey
